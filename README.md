@@ -14,3 +14,7 @@
 **Dependency** | To install it on you need a Spigot server with Vault and any economy system installed. And a mysql database server.
 
 > To compile it you need Spigot and Vault.
+
+
+**Download the plugin over Spigot :**
+#### [Download](http://www.spigotmc.org/resources/mysql-economy-bridge.6174/)
