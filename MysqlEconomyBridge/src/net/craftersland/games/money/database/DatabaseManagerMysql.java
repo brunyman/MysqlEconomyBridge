@@ -59,6 +59,7 @@ public class DatabaseManagerMysql implements DatabaseManagerInterface{
           } catch (SQLException e) {
             //System.out.println("Could not connect");
             Money.log.severe("Could not connect to mysql database!");
+            money.getPluginLoader().disablePlugin(money);
             return false;
           }
 		
@@ -67,7 +68,7 @@ public class DatabaseManagerMysql implements DatabaseManagerInterface{
 	      try {
 	        query = conn.createStatement();
 	        
-	        String accounts = "CREATE TABLE IF NOT EXISTS `bc_accounts` (id int(10) AUTO_INCREMENT, player_name varchar(50) NOT NULL UNIQUE, balance DOUBLE(30,2) NOT NULL, PRIMARY KEY(id));";
+	        String accounts = "CREATE TABLE IF NOT EXISTS `meb_accounts` (id int(10) AUTO_INCREMENT, player_name varchar(50) NOT NULL UNIQUE, balance DOUBLE(30,2) NOT NULL, PRIMARY KEY(id));";
 	        query.executeUpdate(accounts);
 	      } catch (SQLException e) {
 	        e.printStackTrace();

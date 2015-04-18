@@ -4,9 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import net.craftersland.games.money.Money;
@@ -26,7 +23,7 @@ public class MoneyMysqlInterface implements AccountDatabaseInterface <Double>{
 	public boolean hasAccount(UUID player) {
 		      try {
 		 
-		        String sql = "SELECT `player_name` FROM `bc_accounts` WHERE `player_name` = ?";
+		        String sql = "SELECT `player_name` FROM `meb_accounts` WHERE `player_name` = ?";
 		        PreparedStatement preparedUpdateStatement = conn.prepareStatement(sql);
 		        preparedUpdateStatement.setString(1, player.toString());
 		        
@@ -46,7 +43,7 @@ public class MoneyMysqlInterface implements AccountDatabaseInterface <Double>{
 	public boolean createAccount(UUID player) {
 		try {
 			 
-	        String sql = "INSERT INTO `bc_accounts`(`player_name`, `balance`) " +
+	        String sql = "INSERT INTO `meb_accounts`(`player_name`, `balance`) " +
 	                     "VALUES(?, ?)";
 	        PreparedStatement preparedStatement = conn.prepareStatement(sql);
 	        
@@ -69,7 +66,7 @@ public class MoneyMysqlInterface implements AccountDatabaseInterface <Double>{
 		
 	      try {
 	 
-	        String sql = "SELECT `balance` FROM `bc_accounts` WHERE `player_name` = ?";
+	        String sql = "SELECT `balance` FROM `meb_accounts` WHERE `player_name` = ?";
 	        
 	        PreparedStatement preparedUpdateStatement = conn.prepareStatement(sql);
 	        preparedUpdateStatement.setString(1, player.toString());
@@ -91,7 +88,7 @@ public class MoneyMysqlInterface implements AccountDatabaseInterface <Double>{
 		}
 		
         try {
-			String updateSql = "UPDATE `bc_accounts` " +
+			String updateSql = "UPDATE `meb_accounts` " +
 			        "SET `balance` = ?" +
 			        "WHERE `player_name` = ?";
 			PreparedStatement preparedUpdateStatement = conn.prepareStatement(updateSql);
@@ -104,64 +101,6 @@ public class MoneyMysqlInterface implements AccountDatabaseInterface <Double>{
 			e.printStackTrace();
 		}
         return false;
-	}
-	
-	@Override
-	public boolean addToAccount(UUID player, Double amount) {
-		if (!hasAccount(player)) {
-			createAccount(player);
-		}
-		
-		if (amount < 0) {
-			return removeFromAccount(player, -amount);
-		}
-		
-		Double currentBalance = getBalance(player);
-		if (currentBalance <= Double.MAX_VALUE-amount) {
-			setBalance(player, currentBalance+amount);
-			return true;
-		}
-		return false;
-	}
-	
-	@Override
-	public boolean removeFromAccount(UUID player, Double amount) {
-		if (!hasAccount(player)) {
-			createAccount(player);
-		}
-		
-		if (amount < 0) {
-			return addToAccount(player, -amount);
-		}
-		
-		Double currentBalance = getBalance(player);
-		if (currentBalance >= -Double.MAX_VALUE+amount) {
-			setBalance(player, currentBalance-amount);
-			return true;
-		}
-		return false;
-	}
-	
-	@Override
-	public UUID[] getAccounts() {
-		
-	      Statement query;
-	      try {
-	        query = conn.createStatement();
-	 
-	        String sql = "SELECT `player_name` FROM `bc_accounts`";
-	        ResultSet result = query.executeQuery(sql);
-	 
-	        List <UUID> loadingList= new ArrayList <UUID>();
-	        while (result.next()) {
-	        	loadingList.add(UUID.fromString(result.getString("player_name")));
-	        }
-	        return loadingList.toArray(new UUID [0]);
-	        
-	      } catch (SQLException e) {
-	        e.printStackTrace();
-	      }
-		return null;
 	}
 
 }

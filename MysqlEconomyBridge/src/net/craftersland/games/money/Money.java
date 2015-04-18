@@ -28,13 +28,13 @@ public final class Money extends JavaPlugin {
 	@Override
     public void onEnable(){
     	log = getLogger();
-    	log.info("Loading Money Games/Lobby "+getDescription().getVersion()+"... ");
+    	log.info("Loading MysqlEconomyBridge "+getDescription().getVersion()+"... ");
     	
-    	//Create Money folder
-    	(new File("plugins"+System.getProperty("file.separator")+"Money")).mkdir();
+    	//Create MysqlEconomyBridge folder
+    	(new File("plugins"+System.getProperty("file.separator")+"MysqlEconomyBridge")).mkdir();
     	
     	
-    	//Setup Vault for economy and permissions
+    	//Setup Vault for economy
         if (!setupEconomy() ) {
             log.severe(String.format("[%s] - Disabled! Vault installed? If yes Economy system installed?)", getDescription().getName()));
             getServer().getPluginManager().disablePlugin(this);
@@ -48,22 +48,20 @@ public final class Money extends JavaPlugin {
         execService = Executors.newFixedThreadPool(Integer.parseInt(configurationHandler.getString("database.maximumThreads")));
         
       //Setup Database
-        //if (configurationHandler.getString("database.typeOfDatabase").equalsIgnoreCase("mysql")) {
-        	log.info("Using MYSQL as Datasource...");
+        	log.info("Using MySQL as Datasource...");
         	databaseManager = new DatabaseManagerMysql(this);
         	moneyDatabaseInterface = new MoneyMysqlInterface(this);
-        //}
           
       //Register Listeners
     	PluginManager pm = getServer().getPluginManager();
     	pm.registerEvents(new PlayerListener(this), this);
     	
-    	log.info("Money mysql has been successfully loaded!");
+    	log.info("MysqlEconomyBridge has been successfully loaded!");
 	}
 	
 	@Override
     public void onDisable() {
-    	log.info("Money mysql has been disabled");
+    	log.info("MysqlEconomyBridge has been disabled");
     }
 	
 	//Methods for setting up Vault
@@ -76,6 +74,7 @@ public final class Money extends JavaPlugin {
             return false;
         }
         econ = rsp.getProvider();
+        log.info("Using economy system: " + rsp.getProvider().getName());
         return econ != null;
     }
     

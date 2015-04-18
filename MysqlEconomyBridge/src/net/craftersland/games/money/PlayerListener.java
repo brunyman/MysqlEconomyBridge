@@ -24,7 +24,7 @@ public class PlayerListener implements Listener{
 	@EventHandler
 	public void onLogin(final PlayerJoinEvent event) {
 
-		//Check if player has mysql an account first
+		//Check if player has a MySQL account first
 		if (!money.getMoneyDatabaseInterface().hasAccount(event.getPlayer().getUniqueId()))
 		{
 			return;
