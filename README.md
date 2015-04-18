@@ -15,6 +15,5 @@
 
 > To compile it you need Spigot and Vault.
 
-
-**Download the plugin over Spigot :**
+![GitHub Logo](http://www.spigotmc.org/data/resource_icons/6/6174.jpg?1429384324) **Download the plugin over Spigot :**
 #### [Download](http://www.spigotmc.org/resources/mysql-economy-bridge.6174/)
