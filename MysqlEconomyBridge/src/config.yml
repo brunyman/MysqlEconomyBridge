@@ -1,5 +1,5 @@
 # default config.yml for MysqlEconomyBridge
-
+# config version 1.0.0
 
 database:
 #Maximum amount of threads that MysqlEconomyBridge can use to perform money transfers (default:4)

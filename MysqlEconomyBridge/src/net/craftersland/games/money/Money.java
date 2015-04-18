@@ -51,6 +51,12 @@ public final class Money extends JavaPlugin {
         	log.info("Using MySQL as Datasource...");
         	databaseManager = new DatabaseManagerMysql(this);
         	moneyDatabaseInterface = new MoneyMysqlInterface(this);
+        	
+        	if (databaseManager.setupDatabase() == false)
+        	{
+        		getServer().getPluginManager().disablePlugin(this);
+                return;
+        	}
           
       //Register Listeners
     	PluginManager pm = getServer().getPluginManager();

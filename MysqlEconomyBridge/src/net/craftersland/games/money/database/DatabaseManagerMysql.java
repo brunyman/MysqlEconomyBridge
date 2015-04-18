@@ -53,13 +53,10 @@ public class DatabaseManagerMysql implements DatabaseManagerInterface{
                 + "password=" + dbPassword);
            
           } catch (ClassNotFoundException e) {
-            //System.out.println("Could not locate drivers!");
             Money.log.severe("Could not locate drivers for mysql!");
             return false;
           } catch (SQLException e) {
-            //System.out.println("Could not connect");
             Money.log.severe("Could not connect to mysql database!");
-            money.getPluginLoader().disablePlugin(money);
             return false;
           }
 		

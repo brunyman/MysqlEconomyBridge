@@ -8,12 +8,12 @@ public class ConfigurationHandler {
 
 	public ConfigurationHandler(Money money) {
 		this.money = money;
-		if (!(new File("plugins"+System.getProperty("file.separator")+"Money"+System.getProperty("file.separator")+"config.yml").exists())) {
+		if (!(new File("plugins"+System.getProperty("file.separator")+"MysqlEconomyBridge"+System.getProperty("file.separator")+"config.yml").exists())) {
 			Money.log.info("No config file found! Creating new one...");
 			money.saveDefaultConfig();
 		}
 		try {
-			money.getConfig().load(new File("plugins"+System.getProperty("file.separator")+"Money"+System.getProperty("file.separator")+"config.yml"));
+			money.getConfig().load(new File("plugins"+System.getProperty("file.separator")+"MysqlEconomyBridge"+System.getProperty("file.separator")+"config.yml"));
 		} catch (Exception e) {
 			Money.log.info("Could not load config file!");
 			e.printStackTrace();
