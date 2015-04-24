@@ -1,11 +1,7 @@
 # default config.yml for MysqlEconomyBridge
-# config version 1.0.0
+# config version 1.1.0
 
 database:
-#Maximum amount of threads that MysqlEconomyBridge can use to perform money transfers (default:4)
-    maximumThreads: 4
-
-    
     mysql:
         host: 127.0.0.1
         port: 3306

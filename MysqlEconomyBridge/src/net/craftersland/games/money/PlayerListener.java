@@ -57,11 +57,6 @@ public class PlayerListener implements Listener{
 		{
 			return;
 		}
-		//Check if player has account and if no create it
-		if (!money.getMoneyDatabaseInterface().hasAccount(event.getPlayer().getUniqueId()))
-		{
-			money.getMoneyDatabaseInterface().createAccount(event.getPlayer().getUniqueId());
-		}
 		//Set local balance on mysql balance
 		money.getMoneyDatabaseInterface().setBalance(event.getPlayer().getUniqueId(), Money.econ.getBalance(event.getPlayer()));
 

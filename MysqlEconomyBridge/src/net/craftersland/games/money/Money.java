@@ -1,8 +1,6 @@
 package net.craftersland.games.money;
 
 import java.io.File;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 import net.craftersland.games.money.database.AccountDatabaseInterface;
@@ -19,7 +17,6 @@ public final class Money extends JavaPlugin {
 	
 	public static Logger log;
 	public static Economy econ = null;
-	public static ExecutorService execService = null;
 	
 	private ConfigurationHandler configurationHandler;
 	private DatabaseManagerInterface databaseManager;
@@ -44,15 +41,12 @@ public final class Money extends JavaPlugin {
     	//Load Configuration
         configurationHandler = new ConfigurationHandler(this);
         
-      //Initiate Threadpool
-        execService = Executors.newFixedThreadPool(Integer.parseInt(configurationHandler.getString("database.maximumThreads")));
-        
       //Setup Database
         	log.info("Using MySQL as Datasource...");
         	databaseManager = new DatabaseManagerMysql(this);
         	moneyDatabaseInterface = new MoneyMysqlInterface(this);
         	
-        	if (databaseManager.setupDatabase() == false)
+        	if (databaseManager.getConnection() == null)
         	{
         		getServer().getPluginManager().disablePlugin(this);
                 return;
@@ -67,6 +61,11 @@ public final class Money extends JavaPlugin {
 	
 	@Override
     public void onDisable() {
+		//Closing database connection
+		if (databaseManager.getConnection() != null) {
+			log.info("Closing MySQL connection...");
+			databaseManager.closeDatabase();
+		}
     	log.info("MysqlEconomyBridge has been disabled");
     }
 	

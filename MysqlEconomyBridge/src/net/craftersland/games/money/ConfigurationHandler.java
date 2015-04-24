@@ -22,7 +22,7 @@ public class ConfigurationHandler {
 	
 	public String getString(String key) {
 		if (!money.getConfig().contains(key)) {
-			money.getLogger().severe("Could not locate '"+key+"' in the config.yml inside of the Money folder! (Try generating a new one by deleting the current)");
+			money.getLogger().severe("Could not locate '"+key+"' in the config.yml inside of the MysqlEconomyBridge folder! (Try generating a new one by deleting the current)");
 			return "errorCouldNotLocateInConfigYml:"+key;
 		} else {
 			if (key.toLowerCase().contains("color")) {
