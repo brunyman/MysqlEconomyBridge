@@ -33,7 +33,7 @@ public final class Money extends JavaPlugin {
     	
     	//Setup Vault for economy
         if (!setupEconomy() ) {
-            log.severe(String.format("[%s] - Disabled! Vault installed? If yes Economy system installed?)", getDescription().getName()));
+            log.severe("Warning! - Vault installed? If yes Economy system installed?");
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -61,10 +61,12 @@ public final class Money extends JavaPlugin {
 	
 	@Override
     public void onDisable() {
-		//Closing database connection
-		if (databaseManager.getConnection() != null) {
-			log.info("Closing MySQL connection...");
-			databaseManager.closeDatabase();
+		if (this.isEnabled()) {
+			//Closing database connection
+			if (databaseManager.getConnection() != null) {
+				log.info("Closing MySQL connection...");
+				databaseManager.closeDatabase();
+			}
 		}
     	log.info("MysqlEconomyBridge has been disabled");
     }
