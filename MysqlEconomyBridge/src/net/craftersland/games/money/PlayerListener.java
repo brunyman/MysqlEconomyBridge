@@ -47,7 +47,7 @@ public class PlayerListener implements Listener{
 				Money.econ.depositPlayer(event.getPlayer(), money.getMoneyDatabaseInterface().getBalance(event.getPlayer().getUniqueId()));
 				
 			}
-		}, 20L);
+		}, 30L);
 
 	}
 	
@@ -58,10 +58,11 @@ public class PlayerListener implements Listener{
 		if (Money.econ.getBalance(event.getPlayer()) == 0)
 		{
 			return;
+		} else {
+			Double balance = Money.econ.getBalance(event.getPlayer());
+			//Set local balance on mysql balance
+			money.getMoneyDatabaseInterface().setBalance(event.getPlayer().getUniqueId(), balance);
 		}
-		Double balance = Money.econ.getBalance(event.getPlayer());
-		//Set local balance on mysql balance
-		money.getMoneyDatabaseInterface().setBalance(event.getPlayer().getUniqueId(), balance);
 
 	}
 
