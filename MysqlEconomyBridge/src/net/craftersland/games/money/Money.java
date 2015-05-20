@@ -25,7 +25,7 @@ public final class Money extends JavaPlugin {
 	@Override
     public void onEnable(){
     	log = getLogger();
-    	log.info("Loading MysqlEconomyBridge "+getDescription().getVersion()+"... ");
+    	log.info("Loading MysqlEconomyBridge v"+getDescription().getVersion()+"... ");
     	
     	//Create MysqlEconomyBridge folder
     	(new File("plugins"+System.getProperty("file.separator")+"MysqlEconomyBridge")).mkdir();

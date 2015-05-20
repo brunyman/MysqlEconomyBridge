@@ -29,17 +29,19 @@ public class PlayerListener implements Listener{
 		{
 			return;
 		}
+		
+		Double balance = Money.econ.getBalance(event.getPlayer());
+		//Set local balance to 0 before depositing the mysql balance
+		if (balance > 0) 
+		{
+			Money.econ.withdrawPlayer(event.getPlayer(), balance);
+		}
+		
 		//Added a small delay to prevent the onDisconnect handler overlapping onLogin on a BungeeCord configuration when switching servers.
 		Bukkit.getServer().getScheduler().scheduleAsyncDelayedTask(money, new Runnable() {
 
 			@Override
 			public void run() {
-				
-				//Set local balance to 0 before depositing the mysql balance
-				if (Money.econ.getBalance(event.getPlayer()) > 0) 
-				{
-					Money.econ.withdrawPlayer(event.getPlayer(), Money.econ.getBalance(event.getPlayer()));
-				}
 				
 				//Set mysql balance to local balance
 				Money.econ.depositPlayer(event.getPlayer(), money.getMoneyDatabaseInterface().getBalance(event.getPlayer().getUniqueId()));
@@ -57,8 +59,9 @@ public class PlayerListener implements Listener{
 		{
 			return;
 		}
+		Double balance = Money.econ.getBalance(event.getPlayer());
 		//Set local balance on mysql balance
-		money.getMoneyDatabaseInterface().setBalance(event.getPlayer().getUniqueId(), Money.econ.getBalance(event.getPlayer()));
+		money.getMoneyDatabaseInterface().setBalance(event.getPlayer().getUniqueId(), balance);
 
 	}
 
