@@ -3,6 +3,7 @@ package net.craftersland.games.money;
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -31,10 +32,12 @@ public class PlayerListener implements Listener{
 		}
 		
 		Double balance = Money.econ.getBalance(event.getPlayer());
+		final Player p = event.getPlayer();
+		
 		//Set local balance to 0 before depositing the mysql balance
 		if (balance > 0) 
 		{
-			Money.econ.withdrawPlayer(event.getPlayer(), balance);
+			Money.econ.withdrawPlayer(p, balance);
 		}
 		
 		//Added a small delay to prevent the onDisconnect handler overlapping onLogin on a BungeeCord configuration when switching servers.
@@ -44,8 +47,7 @@ public class PlayerListener implements Listener{
 			public void run() {
 				
 				//Set mysql balance to local balance
-				Money.econ.depositPlayer(event.getPlayer(), money.getMoneyDatabaseInterface().getBalance(event.getPlayer().getUniqueId()));
-				
+				Money.econ.depositPlayer(p, money.getMoneyDatabaseInterface().getBalance(p.getUniqueId()));
 			}
 		}, 30L);
 
@@ -58,11 +60,15 @@ public class PlayerListener implements Listener{
 		if (Money.econ.getBalance(event.getPlayer()) == 0)
 		{
 			return;
-		} else {
-			Double balance = Money.econ.getBalance(event.getPlayer());
-			//Set local balance on mysql balance
-			money.getMoneyDatabaseInterface().setBalance(event.getPlayer().getUniqueId(), balance);
-		}
+		} 
+		
+		Double balance = Money.econ.getBalance(event.getPlayer());
+		Player p = event.getPlayer();
+		
+		//Set local balance on mysql balance
+		money.getMoneyDatabaseInterface().setBalance(p.getUniqueId(), balance);
+		//The set local balance 0
+		Money.econ.withdrawPlayer(p, balance);
 
 	}
 
