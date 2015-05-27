@@ -8,9 +8,11 @@ import java.sql.Statement;
 
 import net.craftersland.games.money.Money;
 
+
 public class DatabaseManagerMysql implements DatabaseManagerInterface{
 	
 	private Connection conn = null;
+	private String tableName = "meb_accounts";
 	  
 	  // Hostname
 	  private String dbHost;
@@ -48,9 +50,7 @@ public class DatabaseManagerMysql implements DatabaseManagerInterface{
             dbPassword = money.getConfigurationHandler().getString("database.mysql.password");
             
             //Connect to database
-            conn = DriverManager.getConnection("jdbc:mysql://" + dbHost + ":"
-                + dbPort + "/" + database + "?" + "user=" + dbUser + "&"
-                + "password=" + dbPassword);
+            conn = DriverManager.getConnection("jdbc:mysql://" + dbHost + ":" + dbPort + "/" + database + "?" + "user=" + dbUser + "&" + "password=" + dbPassword);
            
           } catch (ClassNotFoundException e) {
             Money.log.severe("Could not locate drivers for mysql!");
@@ -64,8 +64,9 @@ public class DatabaseManagerMysql implements DatabaseManagerInterface{
 	      Statement query;
 	      try {
 	        query = conn.createStatement();
+	        tableName = money.getConfigurationHandler().getString("database.mysql.tableName");
 	        
-	        String accounts = "CREATE TABLE IF NOT EXISTS `meb_accounts` (id int(10) AUTO_INCREMENT, player_name varchar(50) NOT NULL UNIQUE, balance DOUBLE(30,2) NOT NULL, PRIMARY KEY(id));";
+	        String accounts = "CREATE TABLE IF NOT EXISTS `" + tableName + "` (id int(10) AUTO_INCREMENT, player_name varchar(50) NOT NULL UNIQUE, balance DOUBLE(30,2) NOT NULL, PRIMARY KEY(id));";
 	        query.executeUpdate(accounts);
 	      } catch (SQLException e) {
 	        e.printStackTrace();

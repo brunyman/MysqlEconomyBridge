@@ -3,10 +3,10 @@ package net.craftersland.games.money;
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 public class PlayerListener implements Listener{
@@ -21,54 +21,72 @@ public class PlayerListener implements Listener{
 		this.coHa = money.getConfigurationHandler();
 	}
 	
-	@SuppressWarnings("deprecation")
 	@EventHandler
-	public void onLogin(final PlayerJoinEvent event) {
+	public void onLogin(final AsyncPlayerPreLoginEvent event) {
 
 		//Check if player has a MySQL account first
-		if (!money.getMoneyDatabaseInterface().hasAccount(event.getPlayer().getUniqueId()))
+		if (!money.getMoneyDatabaseInterface().hasAccount(event.getUniqueId()))
 		{
 			return;
 		}
 		
-		Double balance = Money.econ.getBalance(event.getPlayer());
-		final Player p = event.getPlayer();
+		final OfflinePlayer playerName = Bukkit.getOfflinePlayer(event.getUniqueId());
+		Double economyBalance = Money.econ.getBalance(playerName);
 		
 		//Set local balance to 0 before depositing the mysql balance
-		if (balance > 0) 
+		if (economyBalance > 0) 
 		{
-			Money.econ.withdrawPlayer(p, balance);
+			Money.econ.withdrawPlayer(playerName, economyBalance);
 		}
 		
 		//Added a small delay to prevent the onDisconnect handler overlapping onLogin on a BungeeCord configuration when switching servers.
-		Bukkit.getServer().getScheduler().scheduleAsyncDelayedTask(money, new Runnable() {
+		Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(money, new Runnable() {
 
 			@Override
 			public void run() {
+				if (Bukkit.getPlayer(event.getUniqueId()).isOnline() == false) return;
+				
+				Double mysqlBalance = money.getMoneyDatabaseInterface().getBalance(event.getUniqueId());
 				
 				//Set mysql balance to local balance
-				Money.econ.depositPlayer(p, money.getMoneyDatabaseInterface().getBalance(p.getUniqueId()));
+				Money.econ.depositPlayer(playerName, mysqlBalance);
+				
+				if (Money.econ.getBalance(playerName) != money.getMoneyDatabaseInterface().getBalance(event.getUniqueId())) {
+					Double ecoBal = Money.econ.getBalance(playerName);
+					
+					Money.econ.withdrawPlayer(playerName, ecoBal);
+					
+					if (Money.econ.getBalance(playerName) == 0) {
+						Money.econ.depositPlayer(playerName, mysqlBalance);
+					}
+				}
 			}
-		}, 30L);
+		}, 20L);
 
 	}
 	
 	@EventHandler
 	public void onDisconnect(PlayerQuitEvent event) {
 		
+		OfflinePlayer p = Bukkit.getPlayer(event.getPlayer().getName());
+		
 		//Check if local balance is 0
-		if (Money.econ.getBalance(event.getPlayer()) == 0)
+		if (Money.econ.getBalance(p) == 0)
 		{
 			return;
 		} 
 		
-		Double balance = Money.econ.getBalance(event.getPlayer());
-		Player p = event.getPlayer();
+		Double economyBalance = Money.econ.getBalance(p);
 		
 		//Set local balance on mysql balance
-		money.getMoneyDatabaseInterface().setBalance(p.getUniqueId(), balance);
+		money.getMoneyDatabaseInterface().setBalance(p.getUniqueId(), economyBalance);
 		//The set local balance 0
-		Money.econ.withdrawPlayer(p, balance);
+		Money.econ.withdrawPlayer(p, economyBalance);
+		
+		//Double check the economy left balance and set it to 0
+		if (Money.econ.getBalance(p) != 0) {
+			Money.econ.withdrawPlayer(p, economyBalance);
+		}
 
 	}
 

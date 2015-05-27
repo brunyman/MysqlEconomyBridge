@@ -10,9 +10,9 @@ import net.craftersland.games.money.Money;
 
 public class MoneyMysqlInterface implements AccountDatabaseInterface <Double>{
 	
-	@SuppressWarnings("unused")
 	private Money money;
 	private Connection conn;
+	private String tableName = "meb_accounts";
 	
 	public MoneyMysqlInterface(Money money) {
 		this.money = money;
@@ -22,8 +22,9 @@ public class MoneyMysqlInterface implements AccountDatabaseInterface <Double>{
 	@Override
 	public boolean hasAccount(UUID player) {
 		      try {
+		    	  tableName = money.getConfigurationHandler().getString("database.mysql.tableName");
 		 
-		        String sql = "SELECT `player_name` FROM `meb_accounts` WHERE `player_name` = ?";
+		        String sql = "SELECT `player_name` FROM `" + tableName + "` WHERE `player_name` = ?";
 		        PreparedStatement preparedUpdateStatement = conn.prepareStatement(sql);
 		        preparedUpdateStatement.setString(1, player.toString());
 		        
@@ -42,9 +43,9 @@ public class MoneyMysqlInterface implements AccountDatabaseInterface <Double>{
 	@Override
 	public boolean createAccount(UUID player) {
 		try {
+			tableName = money.getConfigurationHandler().getString("database.mysql.tableName");
 			 
-	        String sql = "INSERT INTO `meb_accounts`(`player_name`, `balance`) " +
-	                     "VALUES(?, ?)";
+	        String sql = "INSERT INTO `" + tableName + "`(`player_name`, `balance`) " + "VALUES(?, ?)";
 	        PreparedStatement preparedStatement = conn.prepareStatement(sql);
 	        
 	        preparedStatement.setString(1, player.toString());
@@ -65,8 +66,9 @@ public class MoneyMysqlInterface implements AccountDatabaseInterface <Double>{
 		}
 		
 	      try {
+	    	  tableName = money.getConfigurationHandler().getString("database.mysql.tableName");
 	 
-	        String sql = "SELECT `balance` FROM `meb_accounts` WHERE `player_name` = ?";
+	        String sql = "SELECT `balance` FROM `" + tableName + "` WHERE `player_name` = ?";
 	        
 	        PreparedStatement preparedUpdateStatement = conn.prepareStatement(sql);
 	        preparedUpdateStatement.setString(1, player.toString());
@@ -88,9 +90,9 @@ public class MoneyMysqlInterface implements AccountDatabaseInterface <Double>{
 		}
 		
         try {
-			String updateSql = "UPDATE `meb_accounts` " +
-			        "SET `balance` = ?" +
-			        "WHERE `player_name` = ?";
+        	tableName = money.getConfigurationHandler().getString("database.mysql.tableName");
+        	
+			String updateSql = "UPDATE `" + tableName + "` " + "SET `balance` = ?" + "WHERE `player_name` = ?";
 			PreparedStatement preparedUpdateStatement = conn.prepareStatement(updateSql);
 			preparedUpdateStatement.setString(1, amount+"");
 			preparedUpdateStatement.setString(2, player.toString());
