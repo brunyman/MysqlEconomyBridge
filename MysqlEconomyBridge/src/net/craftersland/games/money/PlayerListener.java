@@ -25,10 +25,7 @@ public class PlayerListener implements Listener{
 	public void onLogin(final AsyncPlayerPreLoginEvent event) {
 
 		//Check if player has a MySQL account first
-		if (!money.getMoneyDatabaseInterface().hasAccount(event.getUniqueId()))
-		{
-			return;
-		}
+		if (!money.getMoneyDatabaseInterface().hasAccount(event.getUniqueId())) return;
 		
 		final OfflinePlayer playerName = Bukkit.getOfflinePlayer(event.getUniqueId());
 		Double economyBalance = Money.econ.getBalance(playerName);
@@ -48,6 +45,8 @@ public class PlayerListener implements Listener{
 				
 				Double mysqlBalance = money.getMoneyDatabaseInterface().getBalance(event.getUniqueId());
 				
+				if (money.getMoneyDatabaseInterface().getBalance(event.getUniqueId()) == 0) return;
+				
 				//Set mysql balance to local balance
 				Money.econ.depositPlayer(playerName, mysqlBalance);
 				
@@ -60,6 +59,9 @@ public class PlayerListener implements Listener{
 						Money.econ.depositPlayer(playerName, mysqlBalance);
 					}
 				}
+				//Set mysql balance to 0
+				money.getMoneyDatabaseInterface().setBalance(event.getUniqueId(), 0.0);
+				
 			}
 		}, 20L);
 
