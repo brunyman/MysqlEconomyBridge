@@ -1,5 +1,5 @@
 # default config.yml for MysqlEconomyBridge
-# config version 1.2.1
+# config version 1.3
 
 #MySQL Database details
 database:
@@ -16,3 +16,10 @@ database:
         user: 'admin'
         #User password
         password: 'cheesecake'
+ 
+ 
+#Other configurable options
+General:
+    #Login economy sync delay in milliseconds (default 1000 milliseconds = 1 second)
+    #This delay is needed in bungeecord setups, because when you move between servers the quit and login takes place almost in the same time.
+    loginSyncDelay: 1000
