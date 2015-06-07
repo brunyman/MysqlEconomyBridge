@@ -49,8 +49,11 @@ public class DatabaseManagerMysql implements DatabaseManagerInterface{
             dbUser = money.getConfigurationHandler().getString("database.mysql.user");
             dbPassword = money.getConfigurationHandler().getString("database.mysql.password");
             
+            String passFix = dbPassword.replaceAll("%", "%25");
+            String passFix2 = passFix.replaceAll("\\+", "%2B");
+            
             //Connect to database
-            conn = DriverManager.getConnection("jdbc:mysql://" + dbHost + ":" + dbPort + "/" + database + "?" + "user=" + dbUser + "&" + "password=" + dbPassword);
+            conn = DriverManager.getConnection("jdbc:mysql://" + dbHost + ":" + dbPort + "/" + database + "?" + "user=" + dbUser + "&" + "password=" + passFix2);
            
           } catch (ClassNotFoundException e) {
             Money.log.severe("Could not locate drivers for mysql!");
