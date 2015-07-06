@@ -7,4 +7,5 @@ public interface DatabaseManagerInterface {
 	public boolean setupDatabase();
 	public boolean closeDatabase();
 	public Connection getConnection();
+	public boolean checkConnection();
 }

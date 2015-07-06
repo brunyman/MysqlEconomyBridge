@@ -21,6 +21,7 @@ public class MoneyMysqlInterface implements AccountDatabaseInterface <Double>{
 	
 	@Override
 	public boolean hasAccount(UUID player) {
+		money.getDatabaseManagerInterface().checkConnection();
 		      try {
 		    	  tableName = money.getConfigurationHandler().getString("database.mysql.tableName");
 		 
@@ -42,6 +43,7 @@ public class MoneyMysqlInterface implements AccountDatabaseInterface <Double>{
 	
 	@Override
 	public boolean createAccount(UUID player) {
+		money.getDatabaseManagerInterface().checkConnection();
 		try {
 			tableName = money.getConfigurationHandler().getString("database.mysql.tableName");
 			 
@@ -61,6 +63,7 @@ public class MoneyMysqlInterface implements AccountDatabaseInterface <Double>{
 	
 	@Override
 	public Double getBalance(UUID player) {
+		money.getDatabaseManagerInterface().checkConnection();
 		if (!hasAccount(player)) {
 			createAccount(player);
 		}
@@ -85,6 +88,7 @@ public class MoneyMysqlInterface implements AccountDatabaseInterface <Double>{
 	
 	@Override
 	public boolean setBalance(UUID player, Double amount) {
+		money.getDatabaseManagerInterface().checkConnection();
 		if (!hasAccount(player)) {
 			createAccount(player);
 		}

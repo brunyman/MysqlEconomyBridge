@@ -93,5 +93,46 @@ public class DatabaseManagerMysql implements DatabaseManagerInterface{
 		}
 		return false;
 	}
+	
+	@Override
+	public boolean checkConnection() {
+		try {
+			if (conn == null) {
+				reConnect();
+				return true;
+			}
+			if (conn.isClosed() == true) {
+				reConnect();
+				return true;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return false;
+	}
+	
+	private boolean reConnect() {
+		try {
+			//Load Drivers
+            Class.forName("com.mysql.jdbc.Driver");
+            
+            dbHost = money.getConfigurationHandler().getString("database.mysql.host");
+            dbPort = money.getConfigurationHandler().getString("database.mysql.port");
+            database = money.getConfigurationHandler().getString("database.mysql.databaseName");
+            dbUser = money.getConfigurationHandler().getString("database.mysql.user");
+            dbPassword = money.getConfigurationHandler().getString("database.mysql.password");
+            
+            String passFix = dbPassword.replaceAll("%", "%25");
+            String passFix2 = passFix.replaceAll("\\+", "%2B");
+            
+            //Connect to database
+            conn = DriverManager.getConnection("jdbc:mysql://" + dbHost + ":" + dbPort + "/" + database + "?" + "user=" + dbUser + "&" + "password=" + passFix2);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return false;
+	}
 
 }
