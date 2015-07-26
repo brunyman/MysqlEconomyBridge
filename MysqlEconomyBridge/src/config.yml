@@ -1,5 +1,5 @@
 # default config.yml for MysqlEconomyBridge
-# config version 1.4
+# config version 1.5.1
 
 #MySQL Database details
 database:
@@ -23,3 +23,5 @@ General:
     #Login economy sync delay in milliseconds (default 1000 milliseconds = 1 second)
     #This delay is needed in bungeecord setups, because when you move between servers the quit and login takes place almost in the same time.
     loginSyncDelay: 1000
+    #Disable players balance set to 0 after player data is uploaded to the database.
+    disableEconomyReset: false

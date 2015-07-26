@@ -22,12 +22,13 @@ public final class Money extends JavaPlugin {
 	public static Logger log;
 	public static Economy econ = null;
 	public HashMap<UUID, Double> playersBalance = new HashMap<UUID, Double>();
+	public HashMap<String, Boolean> playersSync = new HashMap<String, Boolean>();
 	
 	private ConfigurationHandler configurationHandler;
 	private DatabaseManagerInterface databaseManager;
 	private AccountDatabaseInterface<Double> moneyDatabaseInterface;
+	private boolean enabled = false;
 	
-	@SuppressWarnings("deprecation")
 	@Override
     public void onEnable(){
     	log = getLogger();
@@ -62,7 +63,7 @@ public final class Money extends JavaPlugin {
     	PluginManager pm = getServer().getPluginManager();
     	pm.registerEvents(new PlayerListener(this), this);
     	
-    	Bukkit.getScheduler().scheduleAsyncRepeatingTask(this, new Runnable() {
+    	Bukkit.getScheduler().runTaskTimerAsynchronously(this, new Runnable() {
 			public void run() {
 				if (Bukkit.getOnlinePlayers().isEmpty() == true) return;
 				for (Player player : Bukkit.getOnlinePlayers()) {
@@ -70,13 +71,13 @@ public final class Money extends JavaPlugin {
 				}
 			}
 		}, 20L, 20L);
-    	
+    	enabled = true;
     	log.info("MysqlEconomyBridge has been successfully loaded!");
 	}
 	
 	@Override
     public void onDisable() {
-		if (Bukkit.getOnlinePlayers().isEmpty() == false) {
+		if (playersBalance.isEmpty() == false) {
 			log.info("Saving players data...");
 			for (Player player : Bukkit.getOnlinePlayers()) {
 				if (playersBalance.get(player.getUniqueId()) != 0) {
@@ -85,7 +86,7 @@ public final class Money extends JavaPlugin {
 			}
 		}
 		
-		if (this.isEnabled()) {
+		if (enabled == true) {
 			//Closing database connection
 			if (databaseManager.getConnection() != null) {
 				log.info("Closing MySQL connection...");
