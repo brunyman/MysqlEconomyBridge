@@ -22,14 +22,6 @@ public class PlayerListener implements Listener{
 	@EventHandler
 	public void onLogin(final AsyncPlayerPreLoginEvent event) {
 		
-		//Check if player has a MySQL account first
-		if (!money.getMoneyDatabaseInterface().hasAccount(event.getUniqueId())) {
-			OfflinePlayer playerName = Bukkit.getOfflinePlayer(event.getUniqueId());
-			money.playersSync.put(playerName.getName(), true);
-		}
-		
-		final OfflinePlayer playerName = Bukkit.getOfflinePlayer(event.getUniqueId());
-		
 		delay = Integer.parseInt(money.getConfigurationHandler().getString("General.loginSyncDelay")) / 1000;
 		
 		//Added a small delay to prevent the onDisconnect handler overlapping onLogin on a BungeeCord configuration when switching servers.
@@ -37,10 +29,16 @@ public class PlayerListener implements Listener{
 
 			@Override
 			public void run() {
+				OfflinePlayer playerName = Bukkit.getOfflinePlayer(event.getUniqueId());
 				try {
-					if (Bukkit.getPlayer(event.getUniqueId()).isOnline() == false) return;
+					if (playerName.isOnline() == false) return;
 				} catch (Exception e) {
 					
+				}
+				//Check if player has a MySQL account first
+				if (!money.getMoneyDatabaseInterface().hasAccount(event.getUniqueId())) {
+					money.playersSync.put(playerName.getName(), true);
+					return;
 				}
 				//Set local balance to 0 before depositing the mysql balance
 				Double economyBalance = Money.econ.getBalance(playerName);
@@ -51,7 +49,10 @@ public class PlayerListener implements Listener{
 				
 				Double mysqlBalance = money.getMoneyDatabaseInterface().getBalance(event.getUniqueId());
 				
-				if (money.getMoneyDatabaseInterface().getBalance(event.getUniqueId()) == 0) return;
+				if (money.getMoneyDatabaseInterface().getBalance(event.getUniqueId()) == 0) {
+					money.playersSync.put(playerName.getName(), true);
+					return;
+				}
 				
 				//Set mysql balance to local balance
 				Money.econ.depositPlayer(playerName, mysqlBalance);
@@ -59,7 +60,7 @@ public class PlayerListener implements Listener{
 				money.getMoneyDatabaseInterface().setBalance(event.getUniqueId(), 0.0);
 				money.playersSync.put(playerName.getName(), true);
 			}
-		}, delay * 20L);
+		}, delay * 20L + 5);
 
 	}
 	
@@ -68,16 +69,16 @@ public class PlayerListener implements Listener{
 		
 		final OfflinePlayer p = Bukkit.getPlayer(event.getPlayer().getName());
 		if (money.playersSync.containsKey(p.getName()) == false) return;
-		Bukkit.getScheduler().runTaskAsynchronously(money, new Runnable() {
+		Bukkit.getScheduler().runTaskLaterAsynchronously(money, new Runnable() {
 			@Override
 			public void run() {
+				Double economyBalance = Money.econ.getBalance(p);
 				//Check if local balance is 0
-				if (Money.econ.getBalance(p) == 0)
-				{
+				if (Money.econ.getBalance(p) == 0) {
+					money.playersBalance.remove(p.getUniqueId());
+					money.playersSync.remove(p.getName());
 					return;
 				} 
-				
-				Double economyBalance = Money.econ.getBalance(p);
 				
 				//Set local balance on mysql balance
 				money.getMoneyDatabaseInterface().setBalance(p.getUniqueId(), economyBalance);
@@ -95,7 +96,7 @@ public class PlayerListener implements Listener{
 				money.playersBalance.remove(p.getUniqueId());
 				money.playersSync.remove(p.getName());
 			}
-		});
+		}, 2L);
 
 	}
 
