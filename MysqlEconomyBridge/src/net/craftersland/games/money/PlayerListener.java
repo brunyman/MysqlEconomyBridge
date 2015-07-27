@@ -23,7 +23,10 @@ public class PlayerListener implements Listener{
 	public void onLogin(final AsyncPlayerPreLoginEvent event) {
 		
 		//Check if player has a MySQL account first
-		if (!money.getMoneyDatabaseInterface().hasAccount(event.getUniqueId())) return;
+		if (!money.getMoneyDatabaseInterface().hasAccount(event.getUniqueId())) {
+			OfflinePlayer playerName = Bukkit.getOfflinePlayer(event.getUniqueId());
+			money.playersSync.put(playerName.getName(), true);
+		}
 		
 		final OfflinePlayer playerName = Bukkit.getOfflinePlayer(event.getUniqueId());
 		
