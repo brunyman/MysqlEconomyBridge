@@ -1,5 +1,5 @@
 # default config.yml for MysqlEconomyBridge
-# config version 1.5.3
+# config version 1.5.4
 
 #MySQL Database details
 database:

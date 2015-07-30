@@ -29,6 +29,7 @@ public class PlayerListener implements Listener{
 
 			@Override
 			public void run() {
+				if (money.getDatabaseManagerInterface().checkConnection() == false) return;
 				OfflinePlayer playerName = Bukkit.getOfflinePlayer(event.getUniqueId());
 				try {
 					if (playerName.isOnline() == false) return;
@@ -56,8 +57,11 @@ public class PlayerListener implements Listener{
 				
 				//Set mysql balance to local balance
 				Money.econ.depositPlayer(playerName, mysqlBalance);
-				//Set mysql balance to 0
-				money.getMoneyDatabaseInterface().setBalance(event.getUniqueId(), 0.0);
+				if (money.getConfigurationHandler().getString("General.disableEconomyReset").matches("false")) {
+					//Set mysql balance to 0
+					money.getMoneyDatabaseInterface().setBalance(event.getUniqueId(), 0.0);
+				}
+				
 				money.playersSync.put(playerName.getName(), true);
 			}
 		}, delay * 20L + 5);
@@ -78,7 +82,7 @@ public class PlayerListener implements Listener{
 					money.playersBalance.remove(p.getUniqueId());
 					money.playersSync.remove(p.getName());
 					return;
-				} 
+				}
 				
 				//Set local balance on mysql balance
 				money.getMoneyDatabaseInterface().setBalance(p.getUniqueId(), economyBalance);
