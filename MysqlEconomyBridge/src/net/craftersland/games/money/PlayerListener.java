@@ -30,7 +30,7 @@ public class PlayerListener implements Listener{
 			@Override
 			public void run() {
 				if (money.getDatabaseManagerInterface().checkConnection() == false) return;
-				OfflinePlayer playerName = Bukkit.getOfflinePlayer(event.getUniqueId());
+				final OfflinePlayer playerName = Bukkit.getOfflinePlayer(event.getUniqueId());
 				try {
 					if (playerName.isOnline() == false) return;
 				} catch (Exception e) {
@@ -48,7 +48,7 @@ public class PlayerListener implements Listener{
 					Money.econ.withdrawPlayer(playerName, economyBalance);
 				}
 				
-				Double mysqlBalance = money.getMoneyDatabaseInterface().getBalance(event.getUniqueId());
+				final Double mysqlBalance = money.getMoneyDatabaseInterface().getBalance(event.getUniqueId());
 				
 				if (money.getMoneyDatabaseInterface().getBalance(event.getUniqueId()) == 0) {
 					money.playersSync.put(playerName.getName(), true);
@@ -57,6 +57,20 @@ public class PlayerListener implements Listener{
 				
 				//Set mysql balance to local balance
 				Money.econ.depositPlayer(playerName, mysqlBalance);
+				
+				//Check for dupe
+				Bukkit.getScheduler().runTaskLaterAsynchronously(money, new Runnable() {
+
+					@Override
+					public void run() {
+						if (Money.econ.getBalance(playerName) != mysqlBalance) {
+							Money.econ.withdrawPlayer(playerName, Money.econ.getBalance(playerName));
+							Money.econ.depositPlayer(playerName, mysqlBalance);
+						}
+					}
+					
+				}, 5L);
+				
 				if (money.getConfigurationHandler().getString("General.disableEconomyReset").matches("false")) {
 					//Set mysql balance to 0
 					money.getMoneyDatabaseInterface().setBalance(event.getUniqueId(), 0.0);
