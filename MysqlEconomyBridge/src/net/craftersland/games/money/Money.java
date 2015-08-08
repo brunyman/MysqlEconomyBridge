@@ -67,7 +67,9 @@ public final class Money extends JavaPlugin {
 			public void run() {
 				if (Bukkit.getOnlinePlayers().isEmpty() == true) return;
 				for (Player player : Bukkit.getOnlinePlayers()) {
-					playersBalance.put(player.getUniqueId(), econ.getBalance(player));
+					if (playersSync.containsKey(player.getName()) == true) {
+						playersBalance.put(player.getUniqueId(), econ.getBalance(player));
+					}
 				}
 			}
 		}, 20L, 20L);
