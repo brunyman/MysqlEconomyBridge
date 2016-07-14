@@ -1,6 +1,6 @@
-name: MysqlEconomyBridge
-main: net.craftersland.games.money.Money
-version: 1.5.7
+name: MysqlEcoBridge
+main: net.craftersland.eco.bridge.Eco
+version: 3.0.1
 depend: [Vault]
 website: www.craftersland.net
 load: STARTUP

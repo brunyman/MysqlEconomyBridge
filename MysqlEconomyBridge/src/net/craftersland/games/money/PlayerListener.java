@@ -37,14 +37,15 @@ public class PlayerListener implements Listener{
 					return;
 				}
 				
-				Double economyBalance = Money.econ.getBalance(p);
-				
 				//Check if player has a MySQL account first
 				if (money.getMoneyDatabaseInterface().hasAccount(p.getUniqueId()) == false) {
 					money.playersSync.put(p.getName(), true);
 					return;
 				} else {
-					Money.econ.withdrawPlayer(p, economyBalance);
+					if (ecoReset(p) == false) {
+						Money.log.warning("Error on resetting player " + p.getName() + " balance! Report the issue to plugin dev.");
+						return;
+					}
 				}
 				
 				//Added a small delay to prevent the onDisconnect handler overlapping onLogin on a BungeeCord configuration when switching servers.
@@ -52,12 +53,6 @@ public class PlayerListener implements Listener{
 
 					@Override
 					public void run() {
-						//Set local balance to 0 before depositing the mysql balance
-						Double economyBalance = Money.econ.getBalance(p);
-						if (economyBalance > 0) 
-						{
-							Money.econ.withdrawPlayer(p, economyBalance);
-						}
 						
 						Double mysqlBalance = money.getMoneyDatabaseInterface().getBalance(p.getUniqueId());
 						
@@ -66,6 +61,9 @@ public class PlayerListener implements Listener{
 							return;
 						} else {
 							//Set mysql balance to local balance
+							if (Money.econ.getBalance(p) != 0) {
+								ecoReset(p);
+							}
 							Money.econ.depositPlayer(p, mysqlBalance);
 						}
 						
@@ -111,6 +109,21 @@ public class PlayerListener implements Listener{
 			}
 		}, 2L);
 
+	}
+	
+	private boolean ecoReset(Player p) {
+		
+		Double balance = Money.econ.getBalance(p);
+		
+		Money.econ.withdrawPlayer(p, balance);
+		
+		Double newBalance = Money.econ.getBalance(p);
+		
+		if (newBalance != 0) {
+			return false;
+		} else {
+			return true;
+		}
 	}
 
 }
