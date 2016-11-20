@@ -19,12 +19,22 @@ public class EcoDataHandler {
 	private Map<Player, Double> backupMoney = new HashMap<Player, Double>();
 	private Map<Player, Double> balanceMap = new HashMap<Player, Double>();
 	private Map<Player, Integer> runningTasks = new HashMap<Player, Integer>();
-	private Set<Player> playersOnDatabase = new HashSet<Player>();
 	private Set<Player> playersInSync = new HashSet<Player>();
-	private Set<Player> loginComplete = new HashSet<Player>();
 	
 	public EcoDataHandler(Eco eco) {
 		this.eco = eco;
+	}
+	
+	public void onShutDownDataSave() {
+		Eco.log.info("Saving online players data...");
+		List<Player> onlinePlayers = new ArrayList<Player>(Bukkit.getOnlinePlayers());
+		
+		for (Player p : onlinePlayers) {
+			if (p.isOnline() == true) {
+				onDataSaveFunction(p, true, "true", true);
+			}
+		}
+		Eco.log.info("Data save complete for " + onlinePlayers.size() + " players.");
 	}
 	
 	public void updateBalanceMap() {
@@ -46,13 +56,11 @@ public class EcoDataHandler {
 		}
 	}
 	
-	private void dataCleanup(Player p) {
-		if (eco.isDisabling == false) {
+	private void dataCleanup(Player p, Boolean isDisabling) {
+		if (isDisabling == false) {
 			playersInSync.remove(p);
-			playersOnDatabase.remove(p);
 			backupMoney.remove(p);
 			balanceMap.remove(p);
-			loginComplete.remove(p);
 			if (runningTasks.containsKey(p) == true) {
 				Bukkit.getScheduler().cancelTask(runningTasks.get(p));
 				runningTasks.remove(p);
@@ -101,7 +109,6 @@ public class EcoDataHandler {
 		eco.getEcoMysqlHandler().setSyncStatus(p, "false");
 		playersInSync.add(p);
 		backupMoney.remove(p);
-		playersOnDatabase.remove(p);
 		if (cancelTask == true) {
 			int taskID = runningTasks.get(p);
 			runningTasks.remove(p);
@@ -109,11 +116,11 @@ public class EcoDataHandler {
 		}
 	}
 	
-	public void onDataSaveFunction(Player p, Boolean datacleanup, String syncStatus) {
+	public void onDataSaveFunction(Player p, Boolean datacleanup, String syncStatus, Boolean isDisabling) {
 		boolean isPlayerInSync = playersInSync.contains(p);
-		if (eco.isDisabling == false) {
+		if (isDisabling == false) {
 			if (datacleanup == true) {
-				dataCleanup(p);
+				dataCleanup(p, isDisabling);
 			}
 			if (isPlayerInSync == true) {
 				eco.getEcoMysqlHandler().setData(p, Eco.vault.getBalance(p), syncStatus);
@@ -128,14 +135,12 @@ public class EcoDataHandler {
 	}
 	
 	public void onJoinFunction(final Player p) {
-		boolean hasAccount = true;
-		if (loginComplete.contains(p) == true) {
-			hasAccount = playersOnDatabase.contains(p);
-		} else {
-			hasAccount = eco.getEcoMysqlHandler().hasAccount(p);
-		}
-		loginComplete.remove(p);
-		if (hasAccount == true) {
+		if (eco.getEcoMysqlHandler().hasAccount(p) == true) {
+			double balance = Eco.vault.getBalance(p);
+			backupMoney.put(p, balance);
+			if (balance != 0.0) {
+				Eco.vault.withdrawPlayer(p, balance);
+			}
 			String[] data = eco.getEcoMysqlHandler().getData(p);
 			if (data[1].matches("true")) {
 				setPlayerData(p, data, false);
@@ -165,16 +170,6 @@ public class EcoDataHandler {
 			}
 		} else {
 			playersInSync.add(p);
-		}
-	}
-	
-	public void onLoginFunction(Player p) {
-		if (eco.getEcoMysqlHandler().hasAccount(p) == true) {
-			playersOnDatabase.add(p);
-			double balance = Eco.vault.getBalance(p);
-			backupMoney.put(p, balance);
-			Eco.vault.withdrawPlayer(p, balance);
-			loginComplete.add(p);
 		}
 	}
 

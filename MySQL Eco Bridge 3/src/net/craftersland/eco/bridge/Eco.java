@@ -1,8 +1,6 @@
 package net.craftersland.eco.bridge;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -10,10 +8,7 @@ import net.craftersland.eco.bridge.database.EcoMysqlHandler;
 import net.craftersland.eco.bridge.database.MysqlSetup;
 import net.craftersland.eco.bridge.events.PlayerDisconnect;
 import net.craftersland.eco.bridge.events.PlayerJoin;
-import net.craftersland.eco.bridge.events.PlayerLogin;
 import net.craftersland.eco.bridge.events.handlers.EcoDataHandler;
-import net.craftersland.eco.bridge.utils.DataSaveTask;
-import net.craftersland.eco.bridge.utils.EcoUpdateTask;
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.Bukkit;
@@ -27,67 +22,46 @@ public class Eco extends JavaPlugin {
 	
 	public static Logger log;
 	public static Economy vault = null;
-	public boolean isDisabling = false;
+	public static String pluginName = "MysqlEcoBridge";
 	public Map<Player, Integer> syncCompleteTasks = new HashMap<Player, Integer>();
 	
-	private ConfigHandler configHandler;
-	private MysqlSetup mysqlSetup;
-	private EcoMysqlHandler ecoMysqlHandler;
-	private EcoDataHandler edH;
-	private DataSaveTask dst;
-	private EcoUpdateTask eut;
-	private boolean isEnabled = false;
+	private static ConfigHandler configHandler;
+	private static MysqlSetup mysqlSetup;
+	private static EcoMysqlHandler ecoMysqlHandler;
+	private static EcoDataHandler edH;
+	private static BackgroundTask bt;
 	
 	@Override
     public void onEnable() {
-		log = getLogger();
-    	log.info("Loading MysqlEcoBridge v"+getDescription().getVersion()+"... ");
-    	
+		log = getLogger();    	
     	//Setup Vault for economy
         if (setupEconomy() == false) {
             log.severe("Warning! - Vault installed? If yes Economy system installed?");
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
-    	
     	//Load Configuration
         configHandler = new ConfigHandler(this);
         //Setup MySQL
         mysqlSetup = new MysqlSetup(this);
         ecoMysqlHandler = new EcoMysqlHandler(this);
         edH = new EcoDataHandler(this);
-        dst = new DataSaveTask(this);
-        eut = new EcoUpdateTask(this);
-        
-        if (mysqlSetup.getConnection() == null)
-    	{
-    		getServer().getPluginManager().disablePlugin(this);
-            return;
-    	}
-        
+        bt = new BackgroundTask(this);        
         //Register Listeners
     	PluginManager pm = getServer().getPluginManager();
-    	pm.registerEvents(new PlayerLogin(this), this);
     	pm.registerEvents(new PlayerJoin(this), this);
     	pm.registerEvents(new PlayerDisconnect(this), this);
-    	
-    	isEnabled = true;
-    	log.info("MysqlEcoBridge has been successfully loaded!");
+    	log.info(pluginName + " loaded successfully!");
 	}
 	
 	@Override
     public void onDisable() {
-		isDisabling = true;
-		if (isEnabled == true) {
-			onShutDownDataSave();
-			getMysqlSetup().closeConnection();
-		} else if (getMysqlSetup().getConnection() != null) {
-			log.info("Closing MySQL connection...");
-			getMysqlSetup().closeConnection();
-		}
 		Bukkit.getScheduler().cancelTasks(this);
 		HandlerList.unregisterAll(this);
-		log.info("MysqlEcoBridge has been disabled");
+		if (mysqlSetup.getConnection() != null) {
+			edH.onShutDownDataSave();
+			mysqlSetup.closeConnection();
+		}
 	}
 	
 	private boolean setupEconomy() {
@@ -115,23 +89,8 @@ public class Eco extends JavaPlugin {
 	public EcoDataHandler getEcoDataHandler() {
 		return edH;
 	}
-	public DataSaveTask getDataSaveTask() {
-		return dst;
-	}
-	public EcoUpdateTask getEcoUpdateTask() {
-		return eut;
-	}
-	
-	private void onShutDownDataSave() {
-		Eco.log.info("Saving online players data...");
-		List<Player> onlinePlayers = new ArrayList<Player>(Bukkit.getOnlinePlayers());
-		
-		for (Player p : onlinePlayers) {
-			if (p.isOnline() == true) {
-				getEcoDataHandler().onDataSaveFunction(p, true, "true");
-			}
-		}
-		Eco.log.info("Data save complete for " + onlinePlayers.size() + " players.");
+	public BackgroundTask getBackgroundTask() {
+		return bt;
 	}
 
 }

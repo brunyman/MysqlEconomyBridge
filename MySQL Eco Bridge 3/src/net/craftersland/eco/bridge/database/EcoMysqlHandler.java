@@ -54,7 +54,7 @@ public class EcoMysqlHandler {
 		return null;
 	}
 	
-	public boolean setSyncStatus(Player player, String syncStatus) {
+	public void setSyncStatus(Player player, String syncStatus) {
 		PreparedStatement preparedUpdateStatement = null;
 		Connection conn = eco.getMysqlSetup().getConnection();
 		if (conn != null) {
@@ -66,7 +66,6 @@ public class EcoMysqlHandler {
 				preparedUpdateStatement.setString(3, player.getUniqueId().toString());
 				
 				preparedUpdateStatement.executeUpdate();
-				return true;
 			} catch (SQLException e) {
 				Eco.log.warning("Error: " + e.getMessage());
 				e.printStackTrace();
@@ -80,10 +79,9 @@ public class EcoMysqlHandler {
 				}
 			}
 		}
-        return false;
 	}
 	
-	public boolean setData(Player player, Double money, String syncComplete) {
+	public void setData(Player player, Double money, String syncComplete) {
 		if (!hasAccount(player)) {
 			createAccount(player);
 		}
@@ -100,7 +98,6 @@ public class EcoMysqlHandler {
 				preparedUpdateStatement.setString(5, player.getUniqueId().toString());
 				
 				preparedUpdateStatement.executeUpdate();
-				return true;
 			} catch (SQLException e) {
 				Eco.log.warning("Error: " + e.getMessage());
 				e.printStackTrace();
@@ -114,10 +111,9 @@ public class EcoMysqlHandler {
 				}
 			}
 		}
-        return false;
 	}
 	
-	public boolean createAccount(Player player) {
+	public void createAccount(Player player) {
 		PreparedStatement preparedStatement = null;
 		Connection conn = eco.getMysqlSetup().getConnection();
 		if (conn != null) {
@@ -132,7 +128,6 @@ public class EcoMysqlHandler {
 		        preparedStatement.setString(5, "true");
 		        
 		        preparedStatement.executeUpdate();
-		        return true;
 		      } catch (SQLException e) {
 				  Eco.log.warning("Error: " + e.getMessage());
 				  e.printStackTrace();
@@ -146,7 +141,6 @@ public class EcoMysqlHandler {
 		    	  }
 		      }
 		}
-		return false;
 	}
 	
 	public boolean hasAccount(Player player) {

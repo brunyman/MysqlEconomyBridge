@@ -25,7 +25,7 @@ public class PlayerDisconnect implements Listener {
 				if (event.getPlayer() != null) {
 					Player p = event.getPlayer();
 					cleanup(p);
-					eco.getEcoDataHandler().onDataSaveFunction(p, true, "true");
+					eco.getEcoDataHandler().onDataSaveFunction(p, true, "true", false);
 				}
 			}
 			

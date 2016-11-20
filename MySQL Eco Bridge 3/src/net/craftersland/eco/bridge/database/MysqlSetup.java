@@ -6,73 +6,50 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import net.craftersland.eco.bridge.Eco;
 
 public class MysqlSetup {
 	
 	private Connection conn = null;
-	  
-	// Hostname
-	private String dbHost;
-	// Port -- Standard: 3306
-	private String dbPort;
-	// Databankname
-	private String database;
-	// Databank username
-	private String dbUser;
-	// Databank password
-	private String dbPassword;
-
 	private Eco eco;
-	
-	public String dataTableName;
 	
 	public MysqlSetup(Eco eco) {
 		this.eco = eco;
-		
-		dataTableName = eco.getConfigHandler().getString("database.mysql.dataTableName");
-		
+		connectToDatabase();
 		setupDatabase();
 		updateTables();
 	}
 	
-	public boolean setupDatabase() {
+	public void connectToDatabase() {
+		Eco.log.info("Connecting to the database...");
 		try {
        	 	//Load Drivers
             Class.forName("com.mysql.jdbc.Driver");
             
-            dbHost = eco.getConfigHandler().getString("database.mysql.host");
-            dbPort = eco.getConfigHandler().getString("database.mysql.port");
-            database = eco.getConfigHandler().getString("database.mysql.databaseName");
-            dbUser = eco.getConfigHandler().getString("database.mysql.user");
-            dbPassword = eco.getConfigHandler().getString("database.mysql.password");
-            
-            String passFix = dbPassword.replaceAll("%", "%25");
-            String passFix2 = passFix.replaceAll("\\+", "%2B");
-            
             //Connect to database
-            conn = DriverManager.getConnection("jdbc:mysql://" + dbHost + ":" + dbPort + "/" + database + "?" + "user=" + dbUser + "&" + "password=" + passFix2);
+            conn = DriverManager.getConnection("jdbc:mysql://" + eco.getConfigHandler().getString("database.mysql.host") + ":" + eco.getConfigHandler().getString("database.mysql.port") + "/" + eco.getConfigHandler().getString("database.mysql.databaseName") + "?" + "user=" + eco.getConfigHandler().getString("database.mysql.user") + "&" + "password=" + eco.getConfigHandler().getString("database.mysql.password"));
            
           } catch (ClassNotFoundException e) {
-        	  Eco.log.severe("Could not locate drivers for mysql!");
-            return false;
+        	  Eco.log.severe("Could not locate drivers for mysql! Error: " + e.getMessage());
+            return;
           } catch (SQLException e) {
-        	  Eco.log.severe("Could not connect to mysql database!");
-            return false;
+        	  Eco.log.severe("Could not connect to mysql database! Error: " + e.getMessage());
+            return;
           }
-		
+		Eco.log.info("Database connection successful!");
+	}
+	
+	public void setupDatabase() {
 		//Create tables if needed
-	      Statement query = null;
-	      try {
-	        query = conn.createStatement();
-	        
-	        String accounts = "CREATE TABLE IF NOT EXISTS `" + dataTableName + "` (id int(10) AUTO_INCREMENT, player_uuid varchar(50) NOT NULL UNIQUE, player_name varchar(50) NOT NULL, money double(30,2) NOT NULL, sync_complete varchar(5) NOT NULL, last_seen varchar(30) NOT NULL, PRIMARY KEY(id));";
-	        query.executeUpdate(accounts);
+		PreparedStatement query = null;
+	      try {	        
+	        String data = "CREATE TABLE IF NOT EXISTS `" + eco.getConfigHandler().getString("database.mysql.dataTableName") + "` (id int(10) AUTO_INCREMENT, player_uuid varchar(50) NOT NULL UNIQUE, player_name varchar(50) NOT NULL, money double(30,2) NOT NULL, sync_complete varchar(5) NOT NULL, last_seen varchar(30) NOT NULL, PRIMARY KEY(id));";
+	        query = conn.prepareStatement(data);
+	        query.execute();
 	      } catch (SQLException e) {
 	        e.printStackTrace();
-	        return false;
+	        Eco.log.severe("Error creating tables! Error: " + e.getMessage());
 	      } finally {
 	    	  try {
 	    		  if (query != null) {
@@ -82,8 +59,6 @@ public class MysqlSetup {
 	    		  e.printStackTrace();
 	    	  }
 	      }
-      Eco.log.info("MySQL setup complete!");
-		return true;
 	}
 	
 	public Connection getConnection() {
@@ -91,71 +66,52 @@ public class MysqlSetup {
 		return conn;
 	}
 	
-	public boolean checkConnection() {
+	public void checkConnection() {
 		try {
-			if (eco.isDisabling == false) {
-				if (conn == null) {
-					Eco.log.warning("Connection failed. Reconnecting...");
-					if (reConnect() == true) return true;
-					return false;
-				}
-				if (!conn.isValid(3)) {
-					Eco.log.warning("Connection is idle or terminated. Reconnecting...");
-					if (reConnect() == true) return true;
-					return false;
-				}
-				if (conn.isClosed() == true) {
-					Eco.log.warning("Connection is closed. Reconnecting...");
-					if (reConnect() == true) return true;
-					return false;
-				}
+			if (conn == null) {
+				Eco.log.warning("Connection failed. Reconnecting...");
+				reConnect();
 			}
-			return true;
+			if (!conn.isValid(3)) {
+				Eco.log.warning("Connection is idle or terminated. Reconnecting...");
+				reConnect();
+			}
+			if (conn.isClosed() == true) {
+				Eco.log.warning("Connection is closed. Reconnecting...");
+				reConnect();
+			}
 		} catch (Exception e) {
-			Eco.log.severe("Could not reconnect to Database!");
-			e.printStackTrace();
+			Eco.log.severe("Could not reconnect to Database! Error: " + e.getMessage());
 		}
-		return true;
 	}
 	
 	public boolean reConnect() {
-		try {
-			dbHost = eco.getConfigHandler().getString("database.mysql.host");
-            dbPort = eco.getConfigHandler().getString("database.mysql.port");
-            database = eco.getConfigHandler().getString("database.mysql.databaseName");
-            dbUser = eco.getConfigHandler().getString("database.mysql.user");
-            dbPassword = eco.getConfigHandler().getString("database.mysql.password");
-            
-            String passFix = dbPassword.replaceAll("%", "%25");
-            String passFix2 = passFix.replaceAll("\\+", "%2B");
-            
+		try {            
             long start = 0;
 			long end = 0;
 			
 		    start = System.currentTimeMillis();
 		    Eco.log.info("Attempting to establish a connection to the MySQL server!");
-		    Class.forName("com.mysql.jdbc.Driver");
-		    conn = DriverManager.getConnection("jdbc:mysql://" + dbHost + ":" + dbPort + "/" + database + "?" + "user=" + dbUser + "&" + "password=" + passFix2);
+            Class.forName("com.mysql.jdbc.Driver");
+            conn = DriverManager.getConnection("jdbc:mysql://" + eco.getConfigHandler().getString("database.mysql.host") + ":" + eco.getConfigHandler().getString("database.mysql.port") + "/" + eco.getConfigHandler().getString("database.mysql.databaseName") + "?" + "user=" + eco.getConfigHandler().getString("database.mysql.user") + "&" + "password=" + eco.getConfigHandler().getString("database.mysql.password"));
 		    end = System.currentTimeMillis();
 		    Eco.log.info("Connection to MySQL server established!");
 		    Eco.log.info("Connection took " + ((end - start)) + "ms!");
-		    return true;
+            return true;
 		} catch (Exception e) {
-			Eco.log.severe("Could not connect to MySQL server! because: " + e.getMessage());
-			e.printStackTrace();
+			Eco.log.severe("Error re-connecting to the database! Error: " + e.getMessage());
 			return false;
 		}
 	}
 	
-	public boolean closeConnection() {
+	public void closeConnection() {
 		try {
+			Eco.log.info("Closing database connection...");
 			conn.close();
 			conn = null;
-			return true;
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return false;
 	}
 	
 	private void updateTables() {

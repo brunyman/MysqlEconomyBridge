@@ -23,14 +23,11 @@ public class PlayerJoin implements Listener {
 
 			@Override
 			public void run() {
-				if (eco.isDisabling == false) {
-					if (event.getPlayer() != null) {
+				if (event.getPlayer() != null) {
+					if (event.getPlayer().isOnline() == true) {
 						Player p = event.getPlayer();
-						if (p.isOnline() == true) {
-							eco.getEcoDataHandler().onJoinFunction(p);
-							
-							syncCompleteTask(p);
-						}
+						eco.getEcoDataHandler().onJoinFunction(p);
+						syncCompleteTask(p);
 					}
 				}
 			}
