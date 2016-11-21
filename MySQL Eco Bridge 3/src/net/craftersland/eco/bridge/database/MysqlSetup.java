@@ -7,6 +7,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.bukkit.Bukkit;
+
 import net.craftersland.eco.bridge.Eco;
 
 public class MysqlSetup {
@@ -19,6 +21,7 @@ public class MysqlSetup {
 		connectToDatabase();
 		setupDatabase();
 		updateTables();
+		databaseMaintenanceTask();
 	}
 	
 	public void connectToDatabase() {
@@ -143,6 +146,43 @@ public class MysqlSetup {
 	    			e.printStackTrace();
 	    		}
 	    	}
+		}
+	}
+	
+	private void databaseMaintenanceTask() {
+		if (eco.getConfigHandler().getBoolean("database.removeOldAccounts.enabled") == true) {
+			Bukkit.getScheduler().runTaskLaterAsynchronously(eco, new Runnable() {
+
+				@Override
+				public void run() {
+					if (conn != null) {
+						long inactivityDays = Long.parseLong(eco.getConfigHandler().getString("database.removeOldAccounts.inactivity"));
+						long inactivityMils = inactivityDays * 24 * 60 * 60 * 1000;
+						long curentTime = System.currentTimeMillis();
+						long inactiveTime = curentTime - inactivityMils;
+						Eco.log.info("Database maintenance task started...");
+						PreparedStatement preparedStatement = null;
+						try {
+							String sql = "DELETE FROM `" + eco.getConfigHandler().getString("database.mysql.dataTableName") + "` WHERE `last_seen` < ?";
+							preparedStatement = conn.prepareStatement(sql);
+							preparedStatement.setString(1, String.valueOf(inactiveTime));
+							preparedStatement.execute();
+						} catch (Exception e) {
+							e.printStackTrace();
+						} finally {
+							try {
+								if (preparedStatement != null) {
+									preparedStatement.close();
+								}
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+						Eco.log.info("Database maintenance complete!");
+					}
+				}
+				
+			}, 100 * 20L);
 		}
 	}
 
