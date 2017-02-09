@@ -62,6 +62,7 @@ public class Eco extends JavaPlugin {
 			edH.onShutDownDataSave();
 			mysqlSetup.closeConnection();
 		}
+		log.info(pluginName + " is disabled!");
 	}
 	
 	private boolean setupEconomy() {

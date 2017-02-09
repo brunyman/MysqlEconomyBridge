@@ -38,6 +38,7 @@ public class BackgroundTask {
 			if (Bukkit.getOnlinePlayers().isEmpty() == false) {
 				if (System.currentTimeMillis() - lastSave >= m.getConfigHandler().getInteger("General.saveDataTask.interval") * 60 * 1000) {
 					List<Player> onlinePlayers = new ArrayList<Player>(Bukkit.getOnlinePlayers());
+					lastSave = System.currentTimeMillis();
 					if (m.getConfigHandler().getBoolean("General.saveDataTask.hideLogMessages") == false) {
 						Eco.log.info("Saving online players data...");
 					}
@@ -49,7 +50,6 @@ public class BackgroundTask {
 					if (m.getConfigHandler().getBoolean("General.saveDataTask.hideLogMessages") == false) {
 						Eco.log.info("Data save complete for " + onlinePlayers.size() + " players.");
 					}
-					lastSave = System.currentTimeMillis();
 					onlinePlayers.clear();
 				}
 			}

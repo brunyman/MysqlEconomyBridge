@@ -152,7 +152,7 @@ public class EcoDataHandler {
 					public void run() {
 						if (p.isOnline() == true) {
 							String[] data = eco.getEcoMysqlHandler().getData(p);
-							if (data[2].matches("true")) {
+							if (data[1].matches("true")) {
 								setPlayerData(p, data, true);
 							} else if (System.currentTimeMillis() - Long.parseLong(data[2]) >= 15 * 1000) {
 								setPlayerData(p, data, true);
