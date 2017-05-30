@@ -45,14 +45,18 @@ public class PlayerJoin implements Listener {
 					public void run() {
 						if (p.isOnline() == true) {
 							if (eco.getEcoDataHandler().isSyncComplete(p)) {
-								int taskID = eco.syncCompleteTasks.get(p);
-								eco.syncCompleteTasks.remove(p);
-								Bukkit.getScheduler().cancelTask(taskID);
-							} else {
-								if (System.currentTimeMillis() - startTime >= 10 * 1000) {
+								if (eco.syncCompleteTasks.containsKey(p) == true) {
 									int taskID = eco.syncCompleteTasks.get(p);
 									eco.syncCompleteTasks.remove(p);
 									Bukkit.getScheduler().cancelTask(taskID);
+								}
+							} else {
+								if (System.currentTimeMillis() - startTime >= 10 * 1000) {
+									if (eco.syncCompleteTasks.containsKey(p) == true) {
+										int taskID = eco.syncCompleteTasks.get(p);
+										eco.syncCompleteTasks.remove(p);
+										Bukkit.getScheduler().cancelTask(taskID);
+									}
 								}
 							}
 						}
