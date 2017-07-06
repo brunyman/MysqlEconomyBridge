@@ -3,80 +3,62 @@ package net.craftersland.games.money.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import net.craftersland.games.money.Money;
 
 
-public class DatabaseManagerMysql implements DatabaseManagerInterface{
+public class DatabaseManagerMysql {
 	
 	private Connection conn = null;
-	private String tableName = "meb_accounts";
-	  
-	  // Hostname
-	  private String dbHost;
-	 
-	  // Port -- Standard: 3306
-	  private String dbPort;
-	 
-	  // Databankname
-	  private String database;
-	 
-	  // Databank username
-	  private String dbUser;
-	 
-	  // Databank password
-	  private String dbPassword;
 
 	private Money money;
 	
 	public DatabaseManagerMysql(Money money) {
 		this.money = money;
-		
+		connectToDatabase();
 		setupDatabase();
 	}
 	
-	@Override
-	public boolean setupDatabase() {
+	public void connectToDatabase() {
+		Money.log.info("Connecting to the database...");
 		try {
        	 	//Load Drivers
             Class.forName("com.mysql.jdbc.Driver");
             
-            dbHost = money.getConfigurationHandler().getString("database.mysql.host");
-            dbPort = money.getConfigurationHandler().getString("database.mysql.port");
-            database = money.getConfigurationHandler().getString("database.mysql.databaseName");
-            dbUser = money.getConfigurationHandler().getString("database.mysql.user");
-            dbPassword = money.getConfigurationHandler().getString("database.mysql.password");
-            
-            String passFix = dbPassword.replaceAll("%", "%25");
-            String passFix2 = passFix.replaceAll("\\+", "%2B");
-            
             //Connect to database
-            conn = DriverManager.getConnection("jdbc:mysql://" + dbHost + ":" + dbPort + "/" + database + "?" + "user=" + dbUser + "&" + "password=" + passFix2);
+            conn = DriverManager.getConnection("jdbc:mysql://" + money.getConfigurationHandler().getString("database.mysql.host") + ":" + money.getConfigurationHandler().getString("database.mysql.port") + "/" + money.getConfigurationHandler().getString("database.mysql.databaseName") + "?" + "user=" + money.getConfigurationHandler().getString("database.mysql.user") + "&" + "password=" + money.getConfigurationHandler().getString("database.mysql.password"));
            
           } catch (ClassNotFoundException e) {
-            Money.log.severe("Could not locate drivers for mysql!");
-            return false;
+        	  Money.log.severe("Could not locate drivers for mysql! Error: " + e.getMessage());
+            return;
           } catch (SQLException e) {
-            Money.log.severe("Could not connect to mysql database!");
-            return false;
+        	  Money.log.severe("Could not connect to mysql database! Error: " + e.getMessage());
+            return;
           }
-		
-		//Create tables if needed
-	      Statement query;
-	      try {
-	        query = conn.createStatement();
-	        tableName = money.getConfigurationHandler().getString("database.mysql.tableName");
-	        
-	        String accounts = "CREATE TABLE IF NOT EXISTS `" + tableName + "` (id int(10) AUTO_INCREMENT, player_name varchar(50) NOT NULL UNIQUE, balance DOUBLE(30,2) NOT NULL, PRIMARY KEY(id));";
-	        query.executeUpdate(accounts);
+		Money.log.info("Database connection successful!");
+	}
+	
+	public void setupDatabase() {		
+		  //Create tables if needed
+		  PreparedStatement query = null;
+	      try {	        
+	        String data = "CREATE TABLE IF NOT EXISTS `" + money.getConfigurationHandler().getString("database.mysql.tableName") + "` (id int(10) AUTO_INCREMENT, player_name varchar(50) NOT NULL UNIQUE, balance DOUBLE(30,2) NOT NULL, PRIMARY KEY(id));";
+	        query = conn.prepareStatement(data);
+	        query.execute();
 	      } catch (SQLException e) {
-	        e.printStackTrace();
-	        return false;
+	    	  Money.log.severe("Error creating tables! Error: " + e.getMessage());
+	    	  e.printStackTrace();
+	      } finally {
+	    	  try {
+					if (query != null) {
+						query.close();
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 	      }
-      Money.log.info("Mysql has been set up!");
-		return true;
 	}
 	
 	public Connection getConnection() {
@@ -84,66 +66,50 @@ public class DatabaseManagerMysql implements DatabaseManagerInterface{
 		return conn;
 	}
 	
-	@Override
-	public boolean closeDatabase() {
+	public void closeConnection() {
 		try {
+			Money.log.info("Closing database connection...");
 			conn.close();
-			return true;
+			conn = null;
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return false;
 	}
 	
-	@Override
-	public boolean checkConnection() {
+	public void checkConnection() {
 		try {
 			if (conn == null) {
 				Money.log.warning("Connection failed. Reconnecting...");
-				if (reConnect() == true) return true;
-				return false;
+				reConnect();
 			}
 			if (!conn.isValid(3)) {
 				Money.log.warning("Connection is idle or terminated. Reconnecting...");
-				if (reConnect() == true) return true;
-				return false;
+				reConnect();
 			}
 			if (conn.isClosed() == true) {
 				Money.log.warning("Connection is closed. Reconnecting...");
-				if (reConnect() == true) return true;
-				return false;
+				reConnect();
 			}
-			return true;
 		} catch (Exception e) {
-			Money.log.severe("Could not reconnect to Database!");
+			Money.log.severe("Could not reconnect to Database! Error: " + e.getMessage());
 		}
-		return true;
 	}
 	
 	public boolean reConnect() {
-		try {
-			dbHost = money.getConfigurationHandler().getString("database.mysql.host");
-            dbPort = money.getConfigurationHandler().getString("database.mysql.port");
-            database = money.getConfigurationHandler().getString("database.mysql.databaseName");
-            dbUser = money.getConfigurationHandler().getString("database.mysql.user");
-            dbPassword = money.getConfigurationHandler().getString("database.mysql.password");
-            
-            String passFix = dbPassword.replaceAll("%", "%25");
-            String passFix2 = passFix.replaceAll("\\+", "%2B");
-            
+		try {            
             long start = 0;
 			long end = 0;
 			
 		    start = System.currentTimeMillis();
 		    Money.log.info("Attempting to establish a connection to the MySQL server!");
-		    Class.forName("com.mysql.jdbc.Driver");
-		    conn = DriverManager.getConnection("jdbc:mysql://" + dbHost + ":" + dbPort + "/" + database + "?" + "user=" + dbUser + "&" + "password=" + passFix2);
+            Class.forName("com.mysql.jdbc.Driver");
+            conn = DriverManager.getConnection("jdbc:mysql://" + money.getConfigurationHandler().getString("database.mysql.host") + ":" + money.getConfigurationHandler().getString("database.mysql.port") + "/" + money.getConfigurationHandler().getString("database.mysql.databaseName") + "?" + "user=" + money.getConfigurationHandler().getString("database.mysql.user") + "&" + "password=" + money.getConfigurationHandler().getString("database.mysql.password"));
 		    end = System.currentTimeMillis();
 		    Money.log.info("Connection to MySQL server established!");
 		    Money.log.info("Connection took " + ((end - start)) + "ms!");
             return true;
 		} catch (Exception e) {
-			Money.log.severe("Could not connect to MySQL server! because: " + e.getMessage());
+			Money.log.severe("Error re-connecting to the database! Error: " + e.getMessage());
 			return false;
 		}
 	}

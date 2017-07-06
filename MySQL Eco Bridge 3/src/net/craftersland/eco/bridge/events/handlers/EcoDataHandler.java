@@ -83,7 +83,7 @@ public class EcoDataHandler {
 					Eco.vault.depositPlayer(p, finalBalance);
 				} else if (mysqlBal < localBal) {
 					Double finalBalance = localBal - mysqlBal;
-					Eco.vault.depositPlayer(p, finalBalance);
+					Eco.vault.withdrawPlayer(p, finalBalance);
 				}
 			}
 		} catch (Exception e) {
