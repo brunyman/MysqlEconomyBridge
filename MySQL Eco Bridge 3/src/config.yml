@@ -1,5 +1,5 @@
 # default config.yml for MysqlEcoBridge
-# config version 3.2.0
+# config version 3.3.0
 
 #MySQL Database details
 database:
@@ -16,6 +16,8 @@ database:
         user: 'admin'
         #User password
         password: 'cheesecake'
+        #SSL connection.
+        sslEnabled: false
     #This maintenance task runs async with a 2 min delay after the server starts.
     removeOldAccounts:
         #Enable or disable database clean up of old accounts. | (true or false)

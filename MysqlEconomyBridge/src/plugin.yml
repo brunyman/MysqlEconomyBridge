@@ -1,7 +1,0 @@
-name: MysqlEconomyBridge
-main: net.craftersland.games.money.Money
-version: 1.6.0
-depend: [Vault]
-website: www.craftersland.net
-load: STARTUP
-description: Sync your economy accounts over many servers using MySQL.
