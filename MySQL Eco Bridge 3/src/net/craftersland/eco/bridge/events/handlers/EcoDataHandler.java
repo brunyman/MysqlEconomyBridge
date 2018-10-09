@@ -170,6 +170,7 @@ public class EcoDataHandler {
 			}
 		} else {
 			playersInSync.add(p);
+			onDataSaveFunction(p, false, "false", false);
 		}
 	}
 
