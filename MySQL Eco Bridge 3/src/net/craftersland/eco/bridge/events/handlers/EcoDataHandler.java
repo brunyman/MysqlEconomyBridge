@@ -136,38 +136,52 @@ public class EcoDataHandler {
 	
 	public void onJoinFunction(final Player p) {
 		if (eco.getEcoMysqlHandler().hasAccount(p) == true) {
-			double balance = Eco.vault.getBalance(p);
+			final double balance = Eco.vault.getBalance(p);
 			backupMoney.put(p, balance);
-			if (balance != 0.0) {
-				Eco.vault.withdrawPlayer(p, balance);
-			}
-			String[] data = eco.getEcoMysqlHandler().getData(p);
-			if (data[1].matches("true")) {
-				setPlayerData(p, data, false);
-			} else {
-				final long taskStart = System.currentTimeMillis();
-				BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(eco, new Runnable() {
+			Bukkit.getScheduler().runTask(eco, new Runnable() {
 
-					@Override
-					public void run() {
-						if (p.isOnline() == true) {
-							String[] data = eco.getEcoMysqlHandler().getData(p);
-							if (data[1].matches("true")) {
-								setPlayerData(p, data, true);
-							} else if (System.currentTimeMillis() - Long.parseLong(data[2]) >= 15 * 1000) {
-								setPlayerData(p, data, true);
-							}
-						}
-						if (System.currentTimeMillis() - taskStart >= 10 * 1000) {
-							int taskID = runningTasks.get(p);
-							runningTasks.remove(p);
-							Bukkit.getScheduler().cancelTask(taskID);
-						}
+				@Override
+				public void run() {
+					if (balance != 0.0) {
+						Eco.vault.withdrawPlayer(p, balance);
 					}
-					
-				}, 20L, 20L);
-				runningTasks.put(p, task.getTaskId());
-			}
+					String[] data = eco.getEcoMysqlHandler().getData(p);
+					if (data[1].matches("true")) {
+						setPlayerData(p, data, false);
+					} else {
+						final long taskStart = System.currentTimeMillis();
+						BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(eco, new Runnable() {
+
+							@Override
+							public void run() {
+								if (p.isOnline() == true) {
+									final String[] data = eco.getEcoMysqlHandler().getData(p);
+									Bukkit.getScheduler().runTask(eco, new Runnable() {
+
+										@Override
+										public void run() {
+											if (data[1].matches("true")) {
+												setPlayerData(p, data, true);
+											} else if (System.currentTimeMillis() - Long.parseLong(data[2]) >= 15 * 1000) {
+												setPlayerData(p, data, true);
+											}
+										}
+										
+									});
+								}
+								if (System.currentTimeMillis() - taskStart >= 10 * 1000) {
+									int taskID = runningTasks.get(p);
+									runningTasks.remove(p);
+									Bukkit.getScheduler().cancelTask(taskID);
+								}
+							}
+							
+						}, 20L, 20L);
+						runningTasks.put(p, task.getTaskId());
+					}
+				}
+				
+			});
 		} else {
 			playersInSync.add(p);
 			onDataSaveFunction(p, false, "false", false);
