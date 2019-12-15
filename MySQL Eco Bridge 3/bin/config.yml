@@ -1,5 +1,5 @@
 # default config.yml for MysqlEcoBridge
-# config version 3.4.0
+# config version 3.4.1
 
 #MySQL Database details
 database:
