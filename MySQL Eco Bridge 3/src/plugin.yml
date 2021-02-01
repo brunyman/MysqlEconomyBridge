@@ -5,3 +5,4 @@ depend: [Vault]
 website: www.craftersland.net
 load: STARTUP
 description: Sync your economy accounts over many servers using MySQL.
+api-version: 1.16
