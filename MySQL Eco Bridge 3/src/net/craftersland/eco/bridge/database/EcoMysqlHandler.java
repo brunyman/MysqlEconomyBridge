@@ -32,8 +32,7 @@ public class EcoMysqlHandler {
 		        
 		        result = preparedUpdateStatement.executeQuery();
 		        while (result.next()) {
-		        	String[] data = {"" + result.getDouble("money"), result.getString("sync_complete"), result.getString("last_seen")};
-		        	return data;
+					return new String[]{"" + result.getDouble("money"), result.getString("sync_complete"), result.getString("last_seen")};
 		        }
 		    } catch (SQLException e) {
 				Eco.log.warning("Error: " + e.getMessage());

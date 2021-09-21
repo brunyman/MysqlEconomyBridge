@@ -16,7 +16,7 @@ public class ConfigHandler {
 		if (pluginFolder.exists() == false) {
     		pluginFolder.mkdir();
     	}
-		File configFile = new File("plugins" + System.getProperty("file.separator") + Eco.pluginName + System.getProperty("file.separator") + "config.yml");
+		File configFile = new File("plugins" + System.getProperty("file.separator") + Eco.pluginName + System.getProperty("file.separator") + "resources/config.yml");
 		if (configFile.exists() == false) {
 			Eco.log.info("No config file found! Creating new one...");
 			eco.saveDefaultConfig();

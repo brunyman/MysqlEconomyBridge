@@ -33,7 +33,7 @@ public class PlayerDisconnect implements Listener {
 	}
 	
 	private void cleanup(Player p) {
-		if (eco.syncCompleteTasks.containsKey(p) == true) {
+		if (eco.syncCompleteTasks.containsKey(p)) {
 			Bukkit.getScheduler().cancelTask(eco.syncCompleteTasks.get(p));
 			eco.syncCompleteTasks.remove(p);
 		}

@@ -17,7 +17,7 @@ public class BackgroundTask {
 	}
 	
 	private void runTask() {
-		if (m.getConfigHandler().getBoolean("General.saveDataTask.enabled") == true) {
+		if (m.getConfigHandler().getBoolean("General.saveDataTask.enabled")) {
 			Eco.log.info("Data save task is enabled.");
 		} else {
 			Eco.log.info("Data save task is disabled.");
@@ -34,20 +34,20 @@ public class BackgroundTask {
 	}
 	
 	private void runSaveData() {
-		if (m.getConfigHandler().getBoolean("General.saveDataTask.enabled") == true) {
-			if (Bukkit.getOnlinePlayers().isEmpty() == false) {
+		if (m.getConfigHandler().getBoolean("General.saveDataTask.enabled")) {
+			if (!Bukkit.getOnlinePlayers().isEmpty()) {
 				if (System.currentTimeMillis() - lastSave >= m.getConfigHandler().getInteger("General.saveDataTask.interval") * 60 * 1000) {
 					List<Player> onlinePlayers = new ArrayList<Player>(Bukkit.getOnlinePlayers());
 					lastSave = System.currentTimeMillis();
-					if (m.getConfigHandler().getBoolean("General.saveDataTask.hideLogMessages") == false) {
+					if (!m.getConfigHandler().getBoolean("General.saveDataTask.hideLogMessages")) {
 						Eco.log.info("Saving online players data...");
 					}
 					for (Player p : onlinePlayers) {
-						if (p.isOnline() == true) {
+						if (p.isOnline()) {
 							m.getEcoDataHandler().onDataSaveFunction(p, false, "false", false);
 						}
 					}
-					if (m.getConfigHandler().getBoolean("General.saveDataTask.hideLogMessages") == false) {
+					if (!m.getConfigHandler().getBoolean("General.saveDataTask.hideLogMessages")) {
 						Eco.log.info("Data save complete for " + onlinePlayers.size() + " players.");
 					}
 					onlinePlayers.clear();

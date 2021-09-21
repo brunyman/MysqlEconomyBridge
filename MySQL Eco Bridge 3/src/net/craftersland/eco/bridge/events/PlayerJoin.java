@@ -24,7 +24,7 @@ public class PlayerJoin implements Listener {
 			@Override
 			public void run() {
 				if (event.getPlayer() != null) {
-					if (event.getPlayer().isOnline() == true) {
+					if (event.getPlayer().isOnline()) {
 						Player p = event.getPlayer();
 						eco.getEcoDataHandler().onJoinFunction(p);
 						syncCompleteTask(p);
@@ -37,22 +37,22 @@ public class PlayerJoin implements Listener {
 	
 	private void syncCompleteTask(final Player p) {
 		if (p != null) {
-			if (p.isOnline() == true) {
+			if (p.isOnline()) {
 				final long startTime = System.currentTimeMillis();
 				BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(eco, new Runnable() {
 
 					@Override
 					public void run() {
-						if (p.isOnline() == true) {
+						if (p.isOnline()) {
 							if (eco.getEcoDataHandler().isSyncComplete(p)) {
-								if (eco.syncCompleteTasks.containsKey(p) == true) {
+								if (eco.syncCompleteTasks.containsKey(p)) {
 									int taskID = eco.syncCompleteTasks.get(p);
 									eco.syncCompleteTasks.remove(p);
 									Bukkit.getScheduler().cancelTask(taskID);
 								}
 							} else {
 								if (System.currentTimeMillis() - startTime >= 10 * 1000) {
-									if (eco.syncCompleteTasks.containsKey(p) == true) {
+									if (eco.syncCompleteTasks.containsKey(p)) {
 										int taskID = eco.syncCompleteTasks.get(p);
 										eco.syncCompleteTasks.remove(p);
 										Bukkit.getScheduler().cancelTask(taskID);

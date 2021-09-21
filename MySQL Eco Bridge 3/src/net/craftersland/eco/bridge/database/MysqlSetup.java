@@ -88,7 +88,7 @@ public class MysqlSetup {
 				Eco.log.warning("Connection is idle or terminated. Reconnecting...");
 				reConnect();
 			}
-			if (conn.isClosed() == true) {
+			if (conn.isClosed()) {
 				Eco.log.warning("Connection is closed. Reconnecting...");
 				reConnect();
 			}
@@ -112,10 +112,6 @@ public class MysqlSetup {
             properties.setProperty("verifyServerCertificate", "false");
             properties.setProperty("useSSL", eco.getConfigHandler().getString("database.mysql.sslEnabled"));
             properties.setProperty("requireSSL", eco.getConfigHandler().getString("database.mysql.sslEnabled"));
-            //properties.setProperty("useUnicode", "true");
-            //properties.setProperty("characterEncoding", "utf8");
-            //properties.setProperty("characterSetResults", "utf8");
-            //properties.setProperty("connectionCollation", "utf8mb4_unicode_ci");
             conn = DriverManager.getConnection("jdbc:mysql://" + eco.getConfigHandler().getString("database.mysql.host") + ":" + eco.getConfigHandler().getString("database.mysql.port") + "/" + eco.getConfigHandler().getString("database.mysql.databaseName"), properties);
 		    end = System.currentTimeMillis();
 		    Eco.log.info("Connection to MySQL server established in " + ((end - start)) + " ms!");
@@ -169,7 +165,7 @@ public class MysqlSetup {
 	}
 	
 	private void databaseMaintenanceTask() {
-		if (eco.getConfigHandler().getBoolean("database.removeOldAccounts.enabled") == true) {
+		if (eco.getConfigHandler().getBoolean("database.removeOldAccounts.enabled")) {
 			Bukkit.getScheduler().runTaskLaterAsynchronously(eco, new Runnable() {
 
 				@Override

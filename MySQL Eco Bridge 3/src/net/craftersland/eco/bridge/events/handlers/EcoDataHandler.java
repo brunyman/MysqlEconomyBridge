@@ -30,7 +30,7 @@ public class EcoDataHandler {
 		List<Player> onlinePlayers = new ArrayList<Player>(Bukkit.getOnlinePlayers());
 		
 		for (Player p : onlinePlayers) {
-			if (p.isOnline() == true) {
+			if (p.isOnline()) {
 				onDataSaveFunction(p, true, "true", true);
 			}
 		}
@@ -39,9 +39,9 @@ public class EcoDataHandler {
 	
 	public void updateBalanceMap() {
 		List<Player> onlinePlayers = new ArrayList<Player>(Bukkit.getOnlinePlayers());
-		if (onlinePlayers.isEmpty() == false) {
+		if (!onlinePlayers.isEmpty()) {
 			for (Player p : onlinePlayers) {
-				if (playersInSync.contains(p) == true) {
+				if (playersInSync.contains(p)) {
 					balanceMap.put(p, Eco.vault.getBalance(p));
 				}
 			}
@@ -49,7 +49,7 @@ public class EcoDataHandler {
 	}
 	
 	public boolean isSyncComplete(Player p) {
-		if (playersInSync.contains(p) == true) {
+		if (playersInSync.contains(p)) {
 			return true;
 		} else {
 			return false;
@@ -57,11 +57,11 @@ public class EcoDataHandler {
 	}
 	
 	private void dataCleanup(Player p, Boolean isDisabling) {
-		if (isDisabling == false) {
+		if (!isDisabling) {
 			playersInSync.remove(p);
 			backupMoney.remove(p);
 			balanceMap.remove(p);
-			if (runningTasks.containsKey(p) == true) {
+			if (runningTasks.containsKey(p)) {
 				Bukkit.getScheduler().cancelTask(runningTasks.get(p));
 				runningTasks.remove(p);
 			}
@@ -79,10 +79,10 @@ public class EcoDataHandler {
 				Double mysqlBal = Double.parseDouble(data[0]);
 				Double localBal = Eco.vault.getBalance(p);
 				if (mysqlBal >= localBal) {
-					Double finalBalance = mysqlBal - localBal;
+					double finalBalance = mysqlBal - localBal;
 					Eco.vault.depositPlayer(p, finalBalance);
 				} else if (mysqlBal < localBal) {
-					Double finalBalance = localBal - mysqlBal;
+					double finalBalance = localBal - mysqlBal;
 					Eco.vault.withdrawPlayer(p, finalBalance);
 				}
 			}
@@ -97,10 +97,10 @@ public class EcoDataHandler {
 					}
 					Double localBal = Eco.vault.getBalance(p);
 					if (backupBalance >= localBal) {
-						Double finalBalance = backupBalance - localBal;
+						double finalBalance = backupBalance - localBal;
 						Eco.vault.depositPlayer(p, finalBalance);
 					} else if (backupBalance < localBal) {
-						Double finalBalance = localBal - backupBalance;
+						double finalBalance = localBal - backupBalance;
 						Eco.vault.depositPlayer(p, finalBalance);
 					}
 				}
@@ -109,7 +109,7 @@ public class EcoDataHandler {
 		eco.getEcoMysqlHandler().setSyncStatus(p, "false");
 		playersInSync.add(p);
 		backupMoney.remove(p);
-		if (cancelTask == true) {
+		if (cancelTask) {
 			int taskID = runningTasks.get(p);
 			runningTasks.remove(p);
 			Bukkit.getScheduler().cancelTask(taskID);
@@ -118,16 +118,16 @@ public class EcoDataHandler {
 	
 	public void onDataSaveFunction(Player p, Boolean datacleanup, String syncStatus, Boolean isDisabling) {
 		boolean isPlayerInSync = playersInSync.contains(p);
-		if (isDisabling == false) {
-			if (datacleanup == true) {
+		if (!isDisabling) {
+			if (datacleanup) {
 				dataCleanup(p, isDisabling);
 			}
-			if (isPlayerInSync == true) {
+			if (isPlayerInSync) {
 				eco.getEcoMysqlHandler().setData(p, Eco.vault.getBalance(p), syncStatus);
 			}
 		} else {
-			if (isPlayerInSync == true) {
-				if (balanceMap.containsKey(p) == true) {
+			if (isPlayerInSync) {
+				if (balanceMap.containsKey(p)) {
 					eco.getEcoMysqlHandler().setData(p, balanceMap.get(p), syncStatus);
 				}
 			}
@@ -135,7 +135,7 @@ public class EcoDataHandler {
 	}
 	
 	public void onJoinFunction(final Player p) {
-		if (eco.getEcoMysqlHandler().hasAccount(p) == true) {
+		if (eco.getEcoMysqlHandler().hasAccount(p)) {
 			final double balance = Eco.vault.getBalance(p);
 			backupMoney.put(p, balance);
 			Bukkit.getScheduler().runTask(eco, new Runnable() {
@@ -150,32 +150,22 @@ public class EcoDataHandler {
 						setPlayerData(p, data, false);
 					} else {
 						final long taskStart = System.currentTimeMillis();
-						BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(eco, new Runnable() {
-
-							@Override
-							public void run() {
-								if (p.isOnline() == true) {
-									final String[] data = eco.getEcoMysqlHandler().getData(p);
-									Bukkit.getScheduler().runTask(eco, new Runnable() {
-
-										@Override
-										public void run() {
-											if (data[1].matches("true")) {
-												setPlayerData(p, data, true);
-											} else if (System.currentTimeMillis() - Long.parseLong(data[2]) >= 15 * 1000) {
-												setPlayerData(p, data, true);
-											}
-										}
-										
-									});
-								}
-								if (System.currentTimeMillis() - taskStart >= 10 * 1000) {
-									int taskID = runningTasks.get(p);
-									runningTasks.remove(p);
-									Bukkit.getScheduler().cancelTask(taskID);
-								}
+						BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(eco, () -> {
+							if (p.isOnline()) {
+								final String[] data1 = eco.getEcoMysqlHandler().getData(p);
+								Bukkit.getScheduler().runTask(eco, () -> {
+									if (data1[1].matches("true")) {
+										setPlayerData(p, data1, true);
+									} else if (System.currentTimeMillis() - Long.parseLong(data1[2]) >= 15 * 1000) {
+										setPlayerData(p, data1, true);
+									}
+								});
 							}
-							
+							if (System.currentTimeMillis() - taskStart >= 10 * 1000) {
+								int taskID = runningTasks.get(p);
+								runningTasks.remove(p);
+								Bukkit.getScheduler().cancelTask(taskID);
+							}
 						}, 20L, 20L);
 						runningTasks.put(p, task.getTaskId());
 					}
