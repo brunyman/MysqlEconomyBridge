@@ -1,4 +1,0 @@
-name: Money
-main: net.craftersland.games.money.Money
-version: 1.0.0
-depend: [Vault]

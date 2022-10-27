@@ -1,0 +1,6 @@
+main: net.craftersland.ecobridge.Eco
+name: MysqlEcoBridge
+version: 4.0.1
+api-version: 1.17
+description: Sync your economy accounts over many servers using MySQL.
+depend: [Vault]
